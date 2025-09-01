@@ -35,7 +35,7 @@ import Link from "next/link";
 
 import { account } from "@/lib/appwrite";
 import { OAuthProvider } from "appwrite";
-import { useAuthStore } from "@/app/store/auth.store";
+import { useAuthStore } from "@/store/auth.store";
 
 type Props = { formType: "signin" | "signup" };
 

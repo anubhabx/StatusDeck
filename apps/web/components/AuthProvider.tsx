@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect } from "react";
-import { useAuthStore } from "@/app/store/auth.store";
+import { useAuthStore } from "@/store/auth.store";
 import Loader from "./Loader";
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useAuthStore } from "@/app/store/auth.store";
+import { useAuthStore } from "@/store/auth.store";
 import { usePathname, useRouter } from "next/navigation";
 import React, { useEffect } from "react";
 import Loader from "./Loader";
@@ -10,26 +10,38 @@ const ProtectedPage = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
   const { user, loading } = useAuthStore();
 
+  const isPublicPage =
+    pathname === "/signin" || pathname === "/signup" || pathname === "/";
+  const isProtectedPage = !isPublicPage;
+
   useEffect(() => {
-    if (!user) {
+    // Don't redirect while loading
+    if (loading) return;
+
+    if (!user && isProtectedPage) {
       router.push("/signin");
     }
 
-    if (user && (pathname === "/signin" || pathname === "/signup")) {
-      console.log("redirecting to /dashboard");
+    if (user && isPublicPage) {
       router.push("/dashboard");
     }
-  }, [user, router, pathname]);
+  }, [user, loading, router, pathname, isPublicPage, isProtectedPage]);
 
   if (loading) {
     return <Loader />;
   }
 
-  if (user) {
+  // Allow auth pages when not authenticated
+  if (isPublicPage) {
     return <>{children}</>;
   }
 
-  return null;
+  // Protect other pages
+  if (!user && isProtectedPage) {
+    return <Loader />; // Show loader while redirecting
+  }
+
+  return <>{children}</>;
 };
 
 export default ProtectedPage;

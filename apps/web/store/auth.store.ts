@@ -19,12 +19,52 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   loading: false,
   error: null,
 
+  initializeAuth: async () => {
+    set({ loading: true, error: null });
+
+    try {
+      const result = await authService.getCurrentUser();
+
+      if (result.error) {
+        // Silently handle auth errors on initialization
+        if (
+          result.error.includes("401") ||
+          result.error.includes("User (role: guests) missing scope")
+        ) {
+          set({ user: null, loading: false, error: null });
+        } else {
+          set({
+            user: null,
+            error: result.error,
+            loading: false
+          });
+        }
+      } else {
+        set({ user: result.user || null, loading: false });
+      }
+    } catch (error) {
+      set({
+        user: null,
+        error: (error as Error).message,
+        loading: false
+      });
+    }
+  },
+
   getCurrentUser: async () => {
     set({ loading: true, error: null });
     const result = await authService.getCurrentUser();
 
     if (result.error) {
-      set({ user: null, error: result.error, loading: false });
+      // Don't treat 401 as an error - it just means no valid session
+      if (
+        result.error.includes("401") ||
+        result.error.includes("unauthorized")
+      ) {
+        set({ user: null, error: null, loading: false });
+      } else {
+        set({ user: null, error: result.error, loading: false });
+      }
     } else {
       set({ user: result.user || null, loading: false });
     }

@@ -9,13 +9,17 @@ export interface AuthResult {
 
 export const authService = {
   // Sign up with email and password
-  signUp: async (email: string, password: string, name: string): Promise<AuthResult> => {
+  signUp: async (
+    email: string,
+    password: string,
+    name: string
+  ): Promise<AuthResult> => {
     try {
       const user = await account.create("unique()", email, password, name);
-      
+
       // Automatically sign in after successful registration
       const session = await account.createEmailPasswordSession(email, password);
-      
+
       return { user, session };
     } catch (error) {
       return { error: (error as Error).message };
@@ -27,7 +31,7 @@ export const authService = {
     try {
       const session = await account.createEmailPasswordSession(email, password);
       const user = await account.get();
-      
+
       return { user, session };
     } catch (error) {
       return { error: (error as Error).message };
@@ -39,8 +43,13 @@ export const authService = {
     try {
       const user = await account.get();
       return { user };
-    } catch (error) {
-      return { error: (error as Error).message };
+    } catch (error: any) {
+      // Handle specific error cases
+      if (error.code === 401 || error.message?.includes("401")) {
+        // No valid session - this is normal, not an error
+        return { user: undefined };
+      }
+      return { error: error.message || "Failed to get current user" };
     }
   },
 
