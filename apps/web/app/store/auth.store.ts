@@ -1,39 +1,73 @@
 import { create } from "zustand";
-import { account } from "@/lib/appwrite";
 import { Models } from "appwrite";
+import { authService } from "@/lib/auth";
 
 interface AuthState {
   user: Models.User<Models.Preferences> | null;
   loading: boolean;
   error: string | null;
   getCurrentUser: () => Promise<void>;
+  setCurrentUser: (user: Models.User<Models.Preferences> | null) => void;
+  signUp: (email: string, password: string, name: string) => Promise<boolean>;
+  signIn: (email: string, password: string) => Promise<boolean>;
   logout: () => Promise<void>;
+  setError: (error: string | null) => void;
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
-  loading: true, // Initially true while checking for current user
+  loading: false,
   error: null,
+
   getCurrentUser: async () => {
     set({ loading: true, error: null });
-    try {
-      const user = await account.get();
-      set({ user, loading: false });
-    } catch (error) {
-      set({ user: null, error: (error as Error).message });
+    const result = await authService.getCurrentUser();
+
+    if (result.error) {
+      set({ user: null, error: result.error, loading: false });
+    } else {
+      set({ user: result.user || null, loading: false });
     }
-    set({ loading: false });
   },
+
+  setCurrentUser: (user) => set({ user }),
+
+  signUp: async (email: string, password: string, name: string) => {
+    set({ loading: true, error: null });
+    const result = await authService.signUp(email, password, name);
+
+    if (result.error) {
+      set({ error: result.error, loading: false });
+      return false;
+    } else {
+      set({ user: result.user || null, loading: false });
+      return true;
+    }
+  },
+
+  signIn: async (email: string, password: string) => {
+    set({ loading: true, error: null });
+    const result = await authService.signIn(email, password);
+
+    if (result.error) {
+      set({ error: result.error, loading: false });
+      return false;
+    } else {
+      set({ user: result.user || null, loading: false });
+      return true;
+    }
+  },
+
   logout: async () => {
     set({ loading: true, error: null });
-    try {
-      await account.deleteSession({
-        sessionId: "current"
-      });
+    const result = await authService.signOut();
+
+    if (result.error) {
+      set({ error: result.error, loading: false });
+    } else {
       set({ user: null, loading: false });
-    } catch (error) {
-      set({ error: (error as Error).message });
     }
-    set({ loading: false });
-  }
+  },
+
+  setError: (error) => set({ error })
 }));

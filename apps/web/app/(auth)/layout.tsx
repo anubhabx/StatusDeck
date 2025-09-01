@@ -6,7 +6,7 @@ const AuthLayout = ({ children }: { children: React.ReactNode }) => {
     <div className="min-h-screen w-full flex items-center justify-center relative overflow-hidden">
       {children}
       <img
-        src="/Ellipse 1.svg"
+        src="/Ellipse.svg"
         className="absolute top-0 left-0 w-full h-screen object-cover opacity-15 -z-10"
       />
     </div>

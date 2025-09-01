@@ -33,6 +33,10 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
+import { account } from "@/lib/appwrite";
+import { OAuthProvider } from "appwrite";
+import { useAuthStore } from "@/app/store/auth.store";
+
 type Props = { formType: "signin" | "signup" };
 
 // Schemas
@@ -56,6 +60,49 @@ const AuthFormSeparator = () => (
 );
 
 const AuthForm = ({ formType }: Props) => {
+  const { setCurrentUser, setError } = useAuthStore();
+
+  const handleOAuth = async (
+    provider: OAuthProvider.Github | OAuthProvider.Google
+  ) => {
+    try {
+      const response = await account.createOAuth2Session({
+        provider: provider,
+        success: `${window.location.origin}/dashboard`,
+        failure: `${window.location.origin}/signin`
+      });
+    } catch (error) {
+      setError((error as Error).message);
+    }
+  };
+
+  const handleEmailPasswordSignUp = async (data: FormData) => {
+    try {
+      const response = await account.create({
+        userId: "unique()",
+        email: data.get("email") as string,
+        password: data.get("password") as string,
+        name: data.get("name") as string
+      });
+      setCurrentUser(response);
+    } catch (error) {
+      setError((error as Error).message);
+    }
+  };
+
+  const handleEmailPasswordSignIn = async (data: FormData) => {
+    try {
+      const response = account.createEmailPasswordSession({
+        email: data.get("email") as string,
+        password: data.get("password") as string
+      });
+      const user = await account.get();
+      setCurrentUser(user);
+    } catch (error) {
+      setError((error as Error).message);
+    }
+  };
+
   return (
     <Card className="w-full max-w-md bg-stone-950/50 border-border/50 backdrop-blur-sm shadow-lg">
       <CardHeader>
@@ -66,11 +113,19 @@ const AuthForm = ({ formType }: Props) => {
 
       <CardContent className="pt-0 space-y-4">
         <div className="flex flex-col gap-2">
-          <Button variant={"secondary"} className="w-full">
+          <Button
+            variant={"secondary"}
+            className="w-full"
+            onClick={() => handleOAuth(OAuthProvider.Google)}
+          >
             <FaGoogle />
             Continue with Google
           </Button>
-          <Button variant={"secondary"} className="w-full">
+          <Button
+            variant={"secondary"}
+            className="w-full"
+            onClick={() => handleOAuth(OAuthProvider.Github)}
+          >
             <FaGithub />
             Continue with GitHub
           </Button>
@@ -128,6 +183,7 @@ const AuthForm = ({ formType }: Props) => {
 
 const SignInForm = () => {
   const [passwordVisible, setPasswordVisible] = React.useState(false);
+  const { signIn, loading, error } = useAuthStore();
 
   const form = useForm<z.infer<typeof signInSchema>>({
     resolver: zodResolver(signInSchema),
@@ -137,8 +193,12 @@ const SignInForm = () => {
     }
   });
 
-  const onSubmit = (values: z.infer<typeof signInSchema>) => {
-    console.log("Sign in:", values);
+  const onSubmit = async (values: z.infer<typeof signInSchema>) => {
+    const success = await signIn(values.email, values.password);
+    if (success) {
+      // Redirect to dashboard or handle success
+      window.location.href = "/dashboard";
+    }
   };
 
   return (
@@ -196,9 +256,11 @@ const SignInForm = () => {
           )}
         />
 
-        <Button type="submit" className="w-full h-11">
-          Sign In
+        <Button type="submit" className="w-full h-11" disabled={loading}>
+          {loading ? "Signing In..." : "Sign In"}
         </Button>
+
+        {error && <p className="text-sm text-red-500 text-center">{error}</p>}
       </form>
     </Form>
   );
@@ -206,6 +268,7 @@ const SignInForm = () => {
 
 const SignUpForm = () => {
   const [passwordVisible, setPasswordVisible] = React.useState(false);
+  const { signUp, loading, error } = useAuthStore();
 
   const form = useForm<z.infer<typeof signUpSchema>>({
     resolver: zodResolver(signUpSchema),
@@ -216,8 +279,12 @@ const SignUpForm = () => {
     }
   });
 
-  const onSubmit = (values: z.infer<typeof signUpSchema>) => {
-    console.log("Sign up:", values);
+  const onSubmit = async (values: z.infer<typeof signUpSchema>) => {
+    const success = await signUp(values.email, values.password, values.name);
+    if (success) {
+      // Redirect to dashboard or handle success
+      window.location.href = "/dashboard";
+    }
   };
 
   return (
@@ -295,9 +362,11 @@ const SignUpForm = () => {
           )}
         />
 
-        <Button type="submit" className="w-full">
-          Create Account
+        <Button type="submit" className="w-full" disabled={loading}>
+          {loading ? "Creating Account..." : "Create Account"}
         </Button>
+
+        {error && <p className="text-sm text-red-500 text-center">{error}</p>}
       </form>
     </Form>
   );
