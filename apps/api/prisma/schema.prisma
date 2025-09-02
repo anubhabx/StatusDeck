@@ -15,17 +15,15 @@ generator client {
 
 // Simplified User model to reference Appwrite user
 model User {
-  id       String    @id // This will be the Appwrite User ID
+  id       String    @id // This will be the appwrite user ID.
   email    String    @unique
   name     String?
   monitors Monitor[]
 }
 
-// FR-2 & FR-3: Monitor Management and Monitoring Engine
 enum Status {
   UP
   DOWN
-  PENDING
 }
 
 model Monitor {
