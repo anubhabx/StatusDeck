@@ -3,109 +3,155 @@
 import React from "react";
 
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
+} from "@workspace/ui/components/dropdown-menu";
+import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
   SidebarGroup,
-  SidebarGroupAction,
   SidebarGroupContent,
   SidebarGroupLabel,
   SidebarHeader,
-  SidebarInput,
   SidebarInset,
   SidebarMenu,
-  SidebarMenuAction,
-  SidebarMenuBadge,
-  SidebarMenuButton,
   SidebarMenuItem,
-  SidebarMenuSkeleton,
-  SidebarMenuSub,
-  SidebarMenuSubButton,
-  SidebarMenuSubItem,
-  SidebarProvider,
-  SidebarRail,
   SidebarSeparator,
-  SidebarTrigger,
-  useSidebar
+  SidebarMenuButton
 } from "@workspace/ui/components/sidebar";
 import Link from "next/link";
 import { Button } from "@workspace/ui/components/button";
+import { usePathname } from "next/navigation";
+import {
+  LayoutDashboardIcon,
+  Settings2Icon,
+  User2Icon,
+  Layers2Icon,
+  Users2Icon,
+  FoldersIcon
+} from "lucide-react";
+import { useAuthStore } from "@/store/auth.store";
+
+const generalMenuItems = [
+  { label: "Dashboard", href: "/dashboard", icon: LayoutDashboardIcon },
+  { label: "Settings", href: "/settings", icon: Settings2Icon },
+  { label: "Reports", href: "/reports", icon: Layers2Icon }
+];
+
+const managementMenuItems = [
+  { label: "Projects", href: "/projects", icon: FoldersIcon },
+  { label: "Teams", href: "/teams", icon: Users2Icon }
+];
 
 const SidebarComponent = () => {
+  const { user } = useAuthStore();
+  const pathname = usePathname();
+
   return (
-    <Sidebar className="border-l px-4">
+    <Sidebar className="border-l px-4" collapsible="none">
       <SidebarHeader className="flex flex-col items-center justify-center border-b">
         <SidebarInset className="flex flex-row justify-between items-center gap-2 py-2">
           <span>StatusDeck</span>
-          <SidebarTrigger />
         </SidebarInset>
       </SidebarHeader>
 
-      <SidebarContent className="flex flex-col gap-4 py-4">
+      <SidebarContent className="flex flex-col gap-4 overflow-x-hidden overflow-y-auto">
         <SidebarGroup>
-          <SidebarGroupLabel>General</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <Link href="/">
-                  <Button variant="ghost" className="w-full justify-start">
-                    Dashboard
-                  </Button>
-                </Link>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <Link href="/settings">
-                  <Button variant="ghost" className="w-full justify-start">
-                    Settings
-                  </Button>
-                </Link>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <Link href="/reports">
-                  <Button variant="ghost" className="w-full justify-start">
-                    Reports
-                  </Button>
-                </Link>
-              </SidebarMenuItem>
-            </SidebarMenu>
+          <SidebarGroupLabel>
+            <div className="flex items-center justify-between w-full">
+              <span>General</span>
+            </div>
+          </SidebarGroupLabel>
+          <SidebarGroupContent className="flex flex-col gap-1">
+            {generalMenuItems.map((item) => (
+              <SidebarMenu key={item.href}>
+                <SidebarMenuItem>
+                  <Link href={item.href}>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={pathname === item.href}
+                    >
+                      <Button
+                        variant="ghost"
+                        className={`w-full justify-start`}
+                      >
+                        {item.icon && <item.icon className="w-5 h-5 mr-2" />}
+                        {item.label}
+                      </Button>
+                    </SidebarMenuButton>
+                  </Link>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            ))}
           </SidebarGroupContent>
         </SidebarGroup>
+
+        <SidebarSeparator />
+
         <SidebarGroup>
-          <SidebarGroupLabel>Management</SidebarGroupLabel>
-          <SidebarGroupContent>
+          <SidebarGroupLabel className="flex items-center justify-between w-full">
+            Management
+          </SidebarGroupLabel>
+          <SidebarGroupContent className="flex flex-col gap-1">
             <SidebarMenu>
-              <SidebarMenuItem>
-                <Link href="/users">
-                  <Button variant="ghost" className="w-full justify-start">
-                    Users
-                  </Button>
-                </Link>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <Link href="/projects">
-                  <Button variant="ghost" className="w-full justify-start">
-                    Projects
-                  </Button>
-                </Link>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <Link href="/teams">
-                  <Button variant="ghost" className="w-full justify-start">
-                    Teams
-                  </Button>
-                </Link>
-              </SidebarMenuItem>
+              {managementMenuItems.map((item) => (
+                <SidebarMenuItem key={item.href}>
+                  <Link href={item.href}>
+                    <Button variant="ghost" className={`w-full justify-start`}>
+                      {item.icon && <item.icon className="w-5 h-5 mr-2" />}
+                      {item.label}
+                    </Button>
+                  </Link>
+                </SidebarMenuItem>
+              ))}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter className="border-t py-4">
-        <SidebarInset className="flex flex-col items-center justify-center gap-2">
-          <span className="text-sm">© 2024 StatusDeck</span>
-        </SidebarInset>
-      </SidebarFooter>
+      <SidebarFooterComponent username={user?.name} email={user?.email} />
     </Sidebar>
   );
 };
 
+const SidebarFooterComponent = ({
+  username,
+  email
+}: {
+  username?: string;
+  email?: string;
+}) => {
+  return (
+    <SidebarFooter className="border-t py-4">
+      <SidebarInset className="flex flex-col items-center justify-center gap-2">
+        <SidebarMenu>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant={"ghost"} className="w-full justify-start">
+                <User2Icon className="w-4 h-4" />
+                {username}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56" align="start">
+              <Link href="/profile" className="cursor-pointer">
+                <DropdownMenuItem className="cursor-pointer">
+                  <User2Icon className="w-4 h-4 mr-2" />
+                  Profile
+                </DropdownMenuItem>
+              </Link>
+              <Link href="/settings" className="cursor-pointer">
+                <DropdownMenuItem className="cursor-pointer">
+                  <Settings2Icon className="w-4 h-4 mr-2" />
+                  Settings
+                </DropdownMenuItem>
+              </Link>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </SidebarMenu>
+      </SidebarInset>
+    </SidebarFooter>
+  );
+};
 export default SidebarComponent;
