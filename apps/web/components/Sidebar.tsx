@@ -31,18 +31,20 @@ import {
   User2Icon,
   Layers2Icon,
   Users2Icon,
-  FoldersIcon
+  FoldersIcon,
+  LogOutIcon
 } from "lucide-react";
 import { useAuthStore } from "@/store/auth.store";
+import { useRouter } from "next/navigation";
+import { authService } from "@/lib/auth";
 
 const generalMenuItems = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboardIcon },
-  { label: "Settings", href: "/settings", icon: Settings2Icon },
   { label: "Reports", href: "/reports", icon: Layers2Icon }
 ];
 
 const managementMenuItems = [
-  { label: "Projects", href: "/projects", icon: FoldersIcon },
+  { label: "Monitors", href: "/monitors", icon: FoldersIcon },
   { label: "Teams", href: "/teams", icon: Users2Icon }
 ];
 
@@ -51,7 +53,7 @@ const SidebarComponent = () => {
   const pathname = usePathname();
 
   return (
-    <Sidebar className="border-l px-4" collapsible="none">
+    <Sidebar className="border-r px-4" collapsible="none">
       <SidebarHeader className="flex flex-col items-center justify-center border-b">
         <SidebarInset className="flex flex-row justify-between items-center gap-2 py-2">
           <span>StatusDeck</span>
@@ -123,6 +125,14 @@ const SidebarFooterComponent = ({
   username?: string;
   email?: string;
 }) => {
+  const router = useRouter();
+  const { logout } = useAuthStore(); // Add this line
+
+  const handleLogout = async () => {
+    await logout();
+    router.push("/signin");
+  };
+
   return (
     <SidebarFooter className="border-t py-4">
       <SidebarInset className="flex flex-col items-center justify-center gap-2">
@@ -147,6 +157,13 @@ const SidebarFooterComponent = ({
                   Settings
                 </DropdownMenuItem>
               </Link>
+              <DropdownMenuItem
+                className="cursor-pointer"
+                onClick={handleLogout}
+              >
+                <LogOutIcon className="w-4 h-4 mr-2" />
+                Log Out
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </SidebarMenu>

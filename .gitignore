@@ -36,3 +36,5 @@ npm-debug.log*
 *.pem
 
 design.json
+
+apps/api/prisma/migrations

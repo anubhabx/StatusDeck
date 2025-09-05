@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -61,16 +62,19 @@ const AuthFormSeparator = () => (
 
 const AuthForm = ({ formType }: Props) => {
   const { setCurrentUser, setError } = useAuthStore();
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
   const handleOAuth = async (
     provider: OAuthProvider.Github | OAuthProvider.Google
   ) => {
     try {
-      const response = await account.createOAuth2Session({
-        provider: provider,
-        success: `${window.location.origin}/dashboard`,
-        failure: `${window.location.origin}/signin`
-      });
+      const redirectUrl = searchParams.get('redirect') || '/dashboard';
+      const response = await account.createOAuth2Session(
+        provider,
+        `${window.location.origin}${redirectUrl}`,
+        `${window.location.origin}/signin`
+      );
     } catch (error) {
       setError((error as Error).message);
     }
@@ -78,12 +82,12 @@ const AuthForm = ({ formType }: Props) => {
 
   const handleEmailPasswordSignUp = async (data: FormData) => {
     try {
-      const response = await account.create({
-        userId: "unique()",
-        email: data.get("email") as string,
-        password: data.get("password") as string,
-        name: data.get("name") as string
-      });
+      const response = await account.create(
+        "unique()",
+        data.get("email") as string,
+        data.get("password") as string,
+        data.get("name") as string
+      );
       setCurrentUser(response);
     } catch (error) {
       setError((error as Error).message);
@@ -92,10 +96,14 @@ const AuthForm = ({ formType }: Props) => {
 
   const handleEmailPasswordSignIn = async (data: FormData) => {
     try {
-      const response = account.createEmailPasswordSession({
-        email: data.get("email") as string,
-        password: data.get("password") as string
-      });
+      const session = await account.createEmailPasswordSession(
+        data.get("email") as string,
+        data.get("password") as string
+      );
+
+      // Store session for API calls
+      localStorage.setItem("session", session.$id);
+
       const user = await account.get();
       setCurrentUser(user);
     } catch (error) {
@@ -184,6 +192,8 @@ const AuthForm = ({ formType }: Props) => {
 const SignInForm = () => {
   const [passwordVisible, setPasswordVisible] = React.useState(false);
   const { signIn, loading, error } = useAuthStore();
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
   const form = useForm<z.infer<typeof signInSchema>>({
     resolver: zodResolver(signInSchema),
@@ -196,8 +206,8 @@ const SignInForm = () => {
   const onSubmit = async (values: z.infer<typeof signInSchema>) => {
     const success = await signIn(values.email, values.password);
     if (success) {
-      // Redirect to dashboard or handle success
-      window.location.href = "/dashboard";
+      const redirectUrl = searchParams.get('redirect') || '/dashboard';
+      router.push(redirectUrl);
     }
   };
 
@@ -269,6 +279,8 @@ const SignInForm = () => {
 const SignUpForm = () => {
   const [passwordVisible, setPasswordVisible] = React.useState(false);
   const { signUp, loading, error } = useAuthStore();
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
   const form = useForm<z.infer<typeof signUpSchema>>({
     resolver: zodResolver(signUpSchema),
@@ -282,8 +294,8 @@ const SignUpForm = () => {
   const onSubmit = async (values: z.infer<typeof signUpSchema>) => {
     const success = await signUp(values.email, values.password, values.name);
     if (success) {
-      // Redirect to dashboard or handle success
-      window.location.href = "/dashboard";
+      const redirectUrl = searchParams.get('redirect') || '/dashboard';
+      router.push(redirectUrl);
     }
   };
 

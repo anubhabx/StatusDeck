@@ -3,7 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "@workspace/ui/globals.css";
 import { Providers } from "@/components/providers";
 import { AuthProvider } from "@/components/AuthProvider";
-import ProtectedPage from "@/components/ProtectedPage";
+import { Toaster } from "@workspace/ui/components/sonner";
 
 const fontSans = Geist({
   subsets: ["latin"],
@@ -26,10 +26,9 @@ export default function RootLayout({
         className={`${fontSans.variable} ${fontMono.variable} font-sans antialiased dark`}
       >
         <AuthProvider>
-          <ProtectedPage>
-            <Providers>{children}</Providers>
-          </ProtectedPage>
+          <Providers>{children}</Providers>
         </AuthProvider>
+        <Toaster position="bottom-right" richColors />
       </body>
     </html>
   );

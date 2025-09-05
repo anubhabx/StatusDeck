@@ -1,4 +1,4 @@
-import { Account, Client } from "node-appwrite";
+import { Account, Client, Users } from "node-appwrite";
 import { env } from "./env";
 
 const client = new Client()
@@ -8,4 +8,6 @@ const client = new Client()
 
 const account = new Account(client);
 
-export { client, account };
+const users = new Users(client);
+
+export { client, account, users };

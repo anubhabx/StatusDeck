@@ -15,10 +15,11 @@ generator client {
 
 // Simplified User model to reference Appwrite user
 model User {
-  id       String    @id // This will be the appwrite user ID.
-  email    String    @unique
-  name     String?
-  monitors Monitor[]
+  id         String    @id @default(cuid())
+  appwriteId String    @unique
+  email      String    @unique
+  name       String?
+  monitors   Monitor[]
 }
 
 enum Status {
@@ -30,6 +31,8 @@ model Monitor {
   id        String   @id @default(cuid())
   name      String
   url       String
+  interval  Int // in seconds
+  status    Status   @default(UP)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

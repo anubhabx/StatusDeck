@@ -6,47 +6,42 @@ interface AuthState {
   user: Models.User<Models.Preferences> | null;
   loading: boolean;
   error: string | null;
+  initialized: boolean;
   getCurrentUser: () => Promise<void>;
   setCurrentUser: (user: Models.User<Models.Preferences> | null) => void;
   signUp: (email: string, password: string, name: string) => Promise<boolean>;
   signIn: (email: string, password: string) => Promise<boolean>;
   logout: () => Promise<void>;
   setError: (error: string | null) => void;
+  initialize: () => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
   loading: false,
   error: null,
+  initialized: false,
 
-  initializeAuth: async () => {
+  initialize: async () => {
+    // Only initialize once
+    if (get().initialized) return;
+    
     set({ loading: true, error: null });
 
     try {
       const result = await authService.getCurrentUser();
 
-      if (result.error) {
-        // Silently handle auth errors on initialization
-        if (
-          result.error.includes("401") ||
-          result.error.includes("User (role: guests) missing scope")
-        ) {
-          set({ user: null, loading: false, error: null });
-        } else {
-          set({
-            user: null,
-            error: result.error,
-            loading: false
-          });
-        }
+      if (result.success && result.user) {
+        set({ user: result.user, loading: false, initialized: true });
       } else {
-        set({ user: result.user || null, loading: false });
+        set({ user: null, loading: false, initialized: true });
       }
     } catch (error) {
       set({
         user: null,
         error: (error as Error).message,
-        loading: false
+        loading: false,
+        initialized: true
       });
     }
   },

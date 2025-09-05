@@ -2,19 +2,19 @@
 
 import React, { useEffect } from "react";
 import { useAuthStore } from "@/store/auth.store";
-import Loader from "./Loader";
+import { usePathname } from "next/navigation";
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const { getCurrentUser, loading } = useAuthStore();
+  const { initialize, initialized } = useAuthStore();
+  const pathname = usePathname();
 
   useEffect(() => {
-    getCurrentUser();
-  }, [getCurrentUser]);
+    // Only initialize auth state, don't handle redirects (middleware handles that)
+    if (!initialized) {
+      initialize();
+    }
+  }, [initialize, initialized]);
 
-  // Optionally show a loading state while checking auth
-  if (loading) {
-    return <Loader />;
-  }
-
+  // Don't show loading state - let middleware handle redirects
   return <>{children}</>;
 };

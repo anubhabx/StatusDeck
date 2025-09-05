@@ -1,4 +1,3 @@
-import ProtectedPage from "@/components/ProtectedPage";
 import SidebarComponent from "@/components/Sidebar";
 import { SidebarProvider } from "@workspace/ui/components/sidebar";
 import React from "react";
@@ -6,9 +5,9 @@ import React from "react";
 const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <SidebarProvider>
-      <div>
+      <div className="flex min-h-screen">
         <SidebarComponent />
-        {children}
+        <div className="p-4">{children}</div>
       </div>
     </SidebarProvider>
   );

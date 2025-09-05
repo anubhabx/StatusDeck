@@ -2,10 +2,27 @@ import { account } from "./appwrite";
 import { Models } from "appwrite";
 
 export interface AuthResult {
+  success?: boolean;
+  message?: string;
   user?: Models.User<Models.Preferences>;
   session?: Models.Session;
   error?: string;
 }
+
+// Helper function to set session cookie
+const setSessionCookie = (sessionId: string) => {
+  if (typeof window !== "undefined") {
+    // Set cookie with proper security flags
+    document.cookie = `session=${sessionId}; path=/; max-age=${60 * 60 * 24 * 7}; secure; samesite=strict`;
+  }
+};
+
+// Helper function to remove session cookie
+const removeSessionCookie = () => {
+  if (typeof window !== "undefined") {
+    document.cookie = "session=; path=/; max-age=0";
+  }
+};
 
 export const authService = {
   // Sign up with email and password
@@ -20,9 +37,21 @@ export const authService = {
       // Automatically sign in after successful registration
       const session = await account.createEmailPasswordSession(email, password);
 
-      return { user, session };
+      // Set session cookie for middleware
+      setSessionCookie(session.$id);
+
+      return {
+        success: true,
+        message: "User registered successfully",
+        user,
+        session
+      };
     } catch (error) {
-      return { error: (error as Error).message };
+      return {
+        success: false,
+        message: "Failed to sign up",
+        error: (error as Error).message
+      };
     }
   },
 
@@ -32,9 +61,21 @@ export const authService = {
       const session = await account.createEmailPasswordSession(email, password);
       const user = await account.get();
 
-      return { user, session };
+      // Set session cookie for middleware
+      setSessionCookie(session.$id);
+
+      return {
+        success: true,
+        message: "Signed in successfully",
+        user,
+        session
+      };
     } catch (error) {
-      return { error: (error as Error).message };
+      return {
+        success: false,
+        message: "Invalid email or password",
+        error: (error as Error).message
+      };
     }
   },
 
@@ -42,14 +83,26 @@ export const authService = {
   getCurrentUser: async (): Promise<AuthResult> => {
     try {
       const user = await account.get();
-      return { user };
+      return {
+        success: true,
+        user
+      };
     } catch (error: any) {
       // Handle specific error cases
       if (error.code === 401 || error.message?.includes("401")) {
-        // No valid session - this is normal, not an error
-        return { user: undefined };
+        // No valid session - remove invalid cookie
+        removeSessionCookie();
+        return {
+          success: false,
+          message: "No active session",
+          user: undefined
+        };
       }
-      return { error: error.message || "Failed to get current user" };
+      return {
+        success: false,
+        message: "Failed to get current user",
+        error: error.message || "Failed to get current user"
+      };
     }
   },
 
@@ -57,9 +110,16 @@ export const authService = {
   signOut: async (): Promise<AuthResult> => {
     try {
       await account.deleteSession("current");
-      return {};
+      removeSessionCookie();
+      return { success: true, message: "Signed out successfully" };
     } catch (error) {
-      return { error: (error as Error).message };
+      // Even if the API call fails, clear the local cookie
+      removeSessionCookie();
+      return {
+        success: false,
+        message: "Something went wrong, please try again",
+        error: (error as Error).message
+      };
     }
   },
 
@@ -67,9 +127,18 @@ export const authService = {
   signOutAll: async (): Promise<AuthResult> => {
     try {
       await account.deleteSessions();
-      return {};
+      removeSessionCookie();
+      return {
+        success: true,
+        message: "Signed out from all devices successfully"
+      };
     } catch (error) {
-      return { error: (error as Error).message };
+      removeSessionCookie();
+      return {
+        success: false,
+        message: "Something went wrong, please try again",
+        error: (error as Error).message
+      };
     }
   }
 };
