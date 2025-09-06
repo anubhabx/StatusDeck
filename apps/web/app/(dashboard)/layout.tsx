@@ -5,9 +5,9 @@ import React from "react";
 const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <SidebarProvider>
-      <div className="flex min-h-screen">
+      <div className="flex min-h-screen w-full">
         <SidebarComponent />
-        <div className="p-4">{children}</div>
+        <div className="p-4 w-full">{children}</div>
       </div>
     </SidebarProvider>
   );

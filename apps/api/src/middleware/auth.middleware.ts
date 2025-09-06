@@ -1,6 +1,7 @@
 import type { Request, Response, NextFunction } from "express";
-import { account } from "../lib/appwrite";
-import { AppError } from "../lib/error";
+import { Account, Client } from "node-appwrite";
+import { AppError, asyncHandler } from "../lib/error";
+import { env } from "../lib/env";
 
 interface AuthenticatedRequest extends Request {
   user?: {
@@ -10,40 +11,47 @@ interface AuthenticatedRequest extends Request {
   };
 }
 
-export const authMiddleware = async (
-  req: AuthenticatedRequest,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    // Extract session from Authorization header or cookies
-    const sessionId =
-      req.headers.authorization?.replace("Bearer ", "") || req.cookies?.session;
+export const authMiddleware = asyncHandler(
+  async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    const authHeader = req.headers.authorization;
 
-    if (!sessionId) {
-      return next(new AppError("No session token provided", 401));
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return next(new AppError("Unauthorized: No token provided", 401));
     }
 
-    // Get the current user from Appwrite
-    const user = await account.get();
+    const jwt = authHeader.split(" ")[1];
 
-    // Attach user info to request object
-    req.user = {
-      id: user.$id,
-      email: user.email,
-      name: user.name
-    };
+    if (!jwt) {
+      return next(new AppError("Unauthorized: Invalid token format", 401));
+    }
 
-    next();
-  } catch (error) {
-    return next(new AppError("Invalid or expired session", 401));
+    try {
+      const client = new Client()
+        .setEndpoint(env.APPWRITE_ENDPOINT)
+        .setProject(env.APPWRITE_PROJECT_ID)
+        .setJWT(jwt);
+
+      const account = new Account(client);
+
+      const user = await account.get();
+
+      req.user = {
+        id: user.$id,
+        email: user.email || "",
+        name: user.name || ""
+      };
+
+      next();
+    } catch (error) {
+      return next(new AppError("Unauthorized: Invalid token", 401));
+    }
   }
-};
+);
 
 declare global {
   namespace Express {
     interface Request {
-      user?: { id: string };
+      user?: { id: string; email: string; name: string };
     }
   }
 }

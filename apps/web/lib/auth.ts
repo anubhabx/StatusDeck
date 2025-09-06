@@ -13,7 +13,7 @@ export interface AuthResult {
 const setSessionCookie = (sessionId: string) => {
   if (typeof window !== "undefined") {
     // Set cookie with proper security flags
-    document.cookie = `session=${sessionId}; path=/; max-age=${60 * 60 * 24 * 7}; secure; samesite=strict`;
+    document.cookie = `session=${sessionId}; path=/; max-age=${60 * 60 * 24 * 7}; secure; samesite=lax`;
   }
 };
 

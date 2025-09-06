@@ -2,12 +2,15 @@ import express, { type Request, type Response } from "express";
 import cors from "cors";
 import morgan from "morgan";
 import helmet from "helmet";
+import cookieParser from "cookie-parser";
 
 import { env } from "./lib/env";
 import { globalErrorHandler, notFoundHandler, asyncHandler } from "./lib/error";
 
 // Route handlers would be imported here
+import userRoutes from "./routes/user.routes";
 import monitorRoutes from "./routes/monitors.routes";
+import { authMiddleware } from "./middleware/auth.middleware";
 
 const { PORT } = env;
 
@@ -17,10 +20,18 @@ const app = express();
 // Middleware
 app.use(
   helmet({
-    crossOriginResourcePolicy: false
+    crossOriginResourcePolicy: {
+      policy: "cross-origin"
+    }
   })
 );
-app.use(cors());
+app.use(
+  cors({
+    origin: "http://localhost:3000",
+    credentials: true
+  })
+);
+app.use(cookieParser());
 app.use(morgan("dev"));
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
@@ -46,7 +57,13 @@ app.get(
 );
 
 // API routes
-app.use("/api/monitors", monitorRoutes);
+app.use("/api/users", userRoutes);
+
+app.use("/api/monitors", authMiddleware, monitorRoutes);
+
+app.get("/api", authMiddleware, (req: Request, res: Response) => {
+  res.send("Welcome to the StatusDeck API");
+});
 
 // Handle 404 for unmatched routes
 app.use(notFoundHandler);

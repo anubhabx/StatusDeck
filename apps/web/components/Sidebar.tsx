@@ -53,7 +53,7 @@ const SidebarComponent = () => {
   const pathname = usePathname();
 
   return (
-    <Sidebar className="border-r px-4" collapsible="none">
+    <Sidebar className="border-r px-4 max-w-[250px] w-full" collapsible="none">
       <SidebarHeader className="flex flex-col items-center justify-center border-b">
         <SidebarInset className="flex flex-row justify-between items-center gap-2 py-2">
           <span>StatusDeck</span>

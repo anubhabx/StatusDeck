@@ -6,7 +6,6 @@ import {
   updateMonitor,
   deleteMonitor
 } from "../controllers/monitor.controllers";
-import { authMiddleware } from "../middleware/auth.middleware";
 
 const router = Router();
 

@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { Models } from "appwrite";
 import { authService } from "@/lib/auth";
+import axiosClient from "@/lib/axios";
 
 interface AuthState {
   user: Models.User<Models.Preferences> | null;
@@ -25,7 +26,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   initialize: async () => {
     // Only initialize once
     if (get().initialized) return;
-    
+
     set({ loading: true, error: null });
 
     try {
@@ -70,6 +71,18 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   signUp: async (email: string, password: string, name: string) => {
     set({ loading: true, error: null });
     const result = await authService.signUp(email, password, name);
+
+    try {
+      axiosClient.post("/api/users", {
+        appwriteId: result.user?.$id,
+        email: result.user?.email,
+        name: result.user?.name
+      });
+    } catch (error) {
+      console.error("Failed to create user in database:", error);
+      set({ error: "Failed to create user in database", loading: false });
+      return false;
+    }
 
     if (result.error) {
       set({ error: result.error, loading: false });

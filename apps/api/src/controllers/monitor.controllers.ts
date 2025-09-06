@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from "express";
-import prisma from "../prisma/";
+import prisma from "../prisma";
 import { asyncHandler, AppError } from "../lib/error";
 
 // Create a new monitor for the authenticated user
