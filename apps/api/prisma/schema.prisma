@@ -27,14 +27,21 @@ enum Status {
   DOWN
 }
 
+enum MonitorType {
+  HTTP
+  HTTPS
+  PING
+}
+
 model Monitor {
-  id        String   @id @default(cuid())
+  id        String      @id @default(cuid())
   name      String
   url       String
   interval  Int // in seconds
-  status    Status   @default(UP)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  type      MonitorType @default(HTTP) // e.g., "HTTP", "HTTPS", "PING"
+  status    Status      @default(UP)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
 
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)

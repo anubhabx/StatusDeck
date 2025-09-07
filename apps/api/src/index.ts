@@ -19,16 +19,12 @@ const app = express();
 
 // Middleware
 app.use(
-  helmet({
-    crossOriginResourcePolicy: {
-      policy: "cross-origin"
-    }
-  })
-);
-app.use(
   cors({
-    origin: "http://localhost:3000",
-    credentials: true
+    origin: ["http://localhost:3000", "https://statusdeck.app"],
+    credentials: true,
+    allowedHeaders: ["Content-Type", "Authorization"],
+    exposedHeaders: ["Authorization", "Set-Cookie"],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
   })
 );
 app.use(cookieParser());
@@ -48,13 +44,22 @@ app.get(
   })
 );
 
-// Example route using asyncHandler and error handling
+// Test error endpoint
 app.get(
   "/api/test-error",
   asyncHandler(async (req: Request, res: Response) => {
     throw new Error("This is a test error");
   })
 );
+
+// Test Auth
+app.get("/api/test-auth", authMiddleware, (req: Request, res: Response) => {
+  res.status(200).json({
+    status: "success",
+    message: "You are authenticated",
+    user: req.user || null
+  });
+});
 
 // API routes
 app.use("/api/users", userRoutes);

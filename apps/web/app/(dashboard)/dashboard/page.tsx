@@ -12,8 +12,8 @@ const Dashboard = () => {
       Dashboard
       <Button
         onClick={() => {
-          axiosClient.get("/api").then((res) => {
-            toast.success(res.data);
+          axiosClient.get("/health").then((res) => {
+            toast.success(res.data.message);
           });
 
           toast.promise(account.get(), {

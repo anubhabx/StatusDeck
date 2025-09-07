@@ -1,15 +1,32 @@
 import type { Request, Response, NextFunction } from "express";
 import prisma from "../prisma";
 import { asyncHandler, AppError } from "../lib/error";
+import { MonitorType } from "@prisma/client";
 
 // Create a new monitor for the authenticated user
 const createMonitor = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
-    const { name, url, interval } = req.body;
-    const userId = req.user?.id;
+    const { name, url, interval, type } = req.body;
+    const appwriteId = req.user?.id;
 
-    if (!userId) {
+    if (!appwriteId) {
       return next(new AppError("User not authenticated", 401));
+    }
+
+    if (!name || !url || !interval || !type) {
+      return next(new AppError("Missing required fields", 400));
+    }
+
+    if (!Object.values(MonitorType).includes(type)) {
+      return next(new AppError("Invalid monitor type", 400));
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { appwriteId: appwriteId }
+    });
+
+    if (!user) {
+      return next(new AppError("User not found", 404));
     }
 
     const monitor = await prisma.monitor.create({
@@ -17,7 +34,8 @@ const createMonitor = asyncHandler(
         name: name as string,
         url: url as string,
         interval: interval as number,
-        userId: userId // This should match your Prisma schema
+        userId: user?.id,
+        type: type as MonitorType
       }
     });
 
@@ -30,9 +48,16 @@ const getMonitors = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
     const userId = req.user?.id;
 
-    // Fix: should filter by userId, not id
+    const user = await prisma.user.findUnique({
+      where: { appwriteId: userId }
+    });
+
+    if (!user) {
+      return next(new AppError("Unauthorized", 401));
+    }
+
     const monitors = await prisma.monitor.findMany({
-      where: { userId: userId as string }
+      where: { userId: user?.id as string }
     });
 
     res.status(200).json({ success: true, data: monitors });
