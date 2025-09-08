@@ -17,6 +17,18 @@ export interface IMonitor {
   createdAt?: Date;
   updatedAt?: Date;
   userId?: string;
+  checks?: [
+    {
+      id: string;
+      status: "UP" | "DOWN" | "PENDING";
+      createdAt: Date;
+      updatedAt: Date;
+      timestamp: Date;
+      statusCode: number | null;
+      responseTime: number | null;
+      monitorId: string;
+    }
+  ];
 }
 
 export interface CreateMonitorData {
@@ -38,6 +50,9 @@ export const monitorService = {
   getMonitors: async (): Promise<MonitorResult> => {
     try {
       const response = await axiosClient.get("/api/monitors");
+
+      console.log("Fetched monitors:", response.data);
+
       return {
         success: true,
         message: "Monitors fetched successfully",
@@ -71,7 +86,9 @@ export const monitorService = {
   },
 
   // Create a new monitor
-  createMonitor: async (monitorData: CreateMonitorData): Promise<MonitorResult> => {
+  createMonitor: async (
+    monitorData: CreateMonitorData
+  ): Promise<MonitorResult> => {
     try {
       const response = await axiosClient.post("/api/monitors", monitorData);
       return {
@@ -89,9 +106,15 @@ export const monitorService = {
   },
 
   // Update a monitor
-  updateMonitor: async (id: string, monitorData: UpdateMonitorData): Promise<MonitorResult> => {
+  updateMonitor: async (
+    id: string,
+    monitorData: UpdateMonitorData
+  ): Promise<MonitorResult> => {
     try {
-      const response = await axiosClient.put(`/api/monitors/${id}`, monitorData);
+      const response = await axiosClient.put(
+        `/api/monitors/${id}`,
+        monitorData
+      );
       return {
         success: true,
         message: "Monitor updated successfully",

@@ -60,6 +60,25 @@ const getMonitors = asyncHandler(
       where: { userId: user?.id as string }
     });
 
+    const checks = await prisma.check.findMany({
+      where: {
+        monitor: { userId: user?.id as string }
+      }
+    });
+
+    monitors.forEach((monitor) => {
+      const monitorChecks = checks.filter(
+        (check) => check.monitorId === monitor.id
+      );
+      if (monitorChecks.length > 0) {
+        const latestCheck = monitorChecks.reduce((latest, current) =>
+          current.createdAt > latest.createdAt ? current : latest
+        );
+        monitor.status = latestCheck.status;
+        monitor.updatedAt = latestCheck.createdAt;
+      }
+    });
+
     res.status(200).json({ success: true, data: monitors });
   }
 );
@@ -79,6 +98,18 @@ const getMonitor = asyncHandler(
 
     if (!monitor) {
       return next(new AppError("Monitor not found", 404));
+    }
+
+    const checks = await prisma.check.findMany({
+      where: { monitorId: monitor.id }
+    });
+
+    if (checks.length > 0) {
+      const latestCheck = checks.reduce((latest, current) =>
+        current.createdAt > latest.createdAt ? current : latest
+      );
+      monitor.status = latestCheck.status;
+      monitor.updatedAt = latestCheck.createdAt;
     }
 
     res.status(200).json({ success: true, data: monitor });
