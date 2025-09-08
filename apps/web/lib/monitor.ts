@@ -11,8 +11,10 @@ export interface IMonitor {
   id: string;
   name: string;
   url: string;
-  type: "HTTP" | "HTTPS" | "PING";
+  type: "HTTP" | "PING";
   interval: number;
+  lastCheck?: Date;
+  averageResponseTime?: number;
   status?: string;
   createdAt?: Date;
   updatedAt?: Date;
@@ -34,14 +36,14 @@ export interface IMonitor {
 export interface CreateMonitorData {
   name: string;
   url: string;
-  type: "HTTP" | "HTTPS" | "PING";
+  type: "HTTP" | "PING";
   interval: number;
 }
 
 export interface UpdateMonitorData {
   name?: string;
   url?: string;
-  type?: "HTTP" | "HTTPS" | "PING";
+  type?: "HTTP" | "PING";
   interval?: number;
 }
 

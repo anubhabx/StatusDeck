@@ -3,9 +3,11 @@
 import EmptyMonitorState from "@/components/empty-monitor-state";
 import Loader from "@/components/Loader";
 import MonitorCard from "@/components/monitor-card";
+import NewMonitorDialog from "@/components/new-monitor-dialog";
 import axiosClient from "@/lib/axios";
 import { useMonitorStore } from "@/store/monitor.store";
 import { Button } from "@workspace/ui/components/button";
+import { PlusCircleIcon } from "lucide-react";
 
 import React, { useEffect } from "react";
 
@@ -29,10 +31,21 @@ const MonitorsPage = () => {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-      {monitors.map((monitor) => (
-        <MonitorCard key={monitor.id} {...monitor} />
-      ))}
+    <div className="flex flex-col gap-4">
+      <div className="flex w-full items-center justify-between">
+        <div className="">
+          <h1 className="text-2xl font-bold">Monitors</h1>
+          <p className="text-muted-foreground">
+            You have {monitors.length} monitor{monitors.length > 1 ? "s" : ""}.
+          </p>
+        </div>
+        <NewMonitorDialog />
+      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {monitors.map((monitor) => (
+          <MonitorCard key={monitor.id} {...monitor} />
+        ))}
+      </div>
     </div>
   );
 };
