@@ -4,10 +4,7 @@ import EmptyMonitorState from "@/components/empty-monitor-state";
 import Loader from "@/components/Loader";
 import MonitorCard from "@/components/monitor-card";
 import NewMonitorDialog from "@/components/new-monitor-dialog";
-import axiosClient from "@/lib/axios";
 import { useMonitorStore } from "@/store/monitor.store";
-import { Button } from "@workspace/ui/components/button";
-import { PlusCircleIcon } from "lucide-react";
 
 import React, { useEffect } from "react";
 
@@ -18,7 +15,7 @@ const MonitorsPage = () => {
     initialize();
   }, [initialize, initialized]);
 
-  if (!!loading) {
+  if (loading) {
     return <Loader />;
   }
 

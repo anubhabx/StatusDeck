@@ -3,22 +3,18 @@ import { IMonitor } from "@/lib/monitor";
 
 import {
   Card,
-  CardAction,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle
 } from "@workspace/ui/components/card";
-import { Badge, badgeVariants } from "@workspace/ui/components/badge";
+import { Badge } from "@workspace/ui/components/badge";
 import {
-  ChevronDownCircleIcon,
   ChevronUpCircleIcon,
   Link2Icon,
   ActivityIcon,
   TimerIcon
 } from "lucide-react";
-import { cn } from "@workspace/ui/lib/utils";
 import { formatSeconds } from "@/lib/utils";
 
 const MonitorCard = (monitor: IMonitor) => {
@@ -65,8 +61,6 @@ const MonitorCard = (monitor: IMonitor) => {
             <span>Every {formatSeconds(cleanedData.interval)}</span>
           </div>
         </div>
-
-        
       </CardContent>
     </Card>
   );

@@ -36,7 +36,6 @@ import {
 } from "lucide-react";
 import { useAuthStore } from "@/store/auth.store";
 import { useRouter } from "next/navigation";
-import { authService } from "@/lib/auth";
 
 const generalMenuItems = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboardIcon },
@@ -113,18 +112,12 @@ const SidebarComponent = () => {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooterComponent username={user?.name} email={user?.email} />
+      <SidebarFooterComponent username={user?.name} />
     </Sidebar>
   );
 };
 
-const SidebarFooterComponent = ({
-  username,
-  email
-}: {
-  username?: string;
-  email?: string;
-}) => {
+const SidebarFooterComponent = ({ username }: { username?: string }) => {
   const router = useRouter();
   const { logout } = useAuthStore(); // Add this line
 
