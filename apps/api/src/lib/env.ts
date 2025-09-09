@@ -8,7 +8,8 @@ const envSchema = z.object({
   DATABASE_URL: z.string().url(),
   APPWRITE_ENDPOINT: z.string().url(),
   APPWRITE_PROJECT_ID: z.string().min(1),
-  APPWRITE_API_KEY: z.string().min(1)
+  APPWRITE_API_KEY: z.string().min(1),
+  WORKER_SECRET: z.string().min(1)
 });
 
 const parsedEnv = envSchema.safeParse(process.env);

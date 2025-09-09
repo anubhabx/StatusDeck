@@ -10,6 +10,7 @@ import { globalErrorHandler, notFoundHandler, asyncHandler } from "./lib/error";
 // Route handlers would be imported here
 import userRoutes from "./routes/user.routes";
 import monitorRoutes from "./routes/monitors.routes";
+import workerRoutes from "./routes/worker.routes";
 import { authMiddleware } from "./middleware/auth.middleware";
 
 const { PORT } = env;
@@ -63,6 +64,8 @@ app.get("/api/test-auth", authMiddleware, (req: Request, res: Response) => {
 
 // API routes
 app.use("/api/users", userRoutes);
+
+app.use("/api/workers", workerRoutes);
 
 app.use("/api/monitors", authMiddleware, monitorRoutes);
 
