@@ -41,6 +41,7 @@ model Monitor {
   type                MonitorType @default(HTTP) // e.g., "HTTP", "HTTPS", "PING"
   lastCheck           DateTime?
   averageResponseTime Int? // in milliseconds
+  totalChecks         Int         @default(0)
   status              Status      @default(PENDING)
   createdAt           DateTime    @default(now())
   updatedAt           DateTime    @updatedAt
