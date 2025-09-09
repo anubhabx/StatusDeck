@@ -1,7 +1,7 @@
 import express, { type Request, type Response } from "express";
 import cors from "cors";
 import morgan from "morgan";
-import helmet from "helmet";
+import helmet, { hidePoweredBy } from "helmet";
 import cookieParser from "cookie-parser";
 
 import { env } from "./lib/env";
@@ -19,6 +19,7 @@ const { PORT } = env;
 const app = express();
 
 // Middleware
+app.use(helmet.hidePoweredBy());
 app.use(
   cors({
     origin: ["http://localhost:3000", "https://statusdeck.app"],
