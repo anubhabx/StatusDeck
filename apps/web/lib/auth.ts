@@ -87,7 +87,7 @@ export const authService = {
         success: true,
         user
       };
-    } catch (error: any) {
+    } catch (error: Error | any) {
       // Handle specific error cases
       if (error.code === 401 || error.message?.includes("401")) {
         // No valid session - remove invalid cookie

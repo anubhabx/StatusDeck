@@ -61,51 +61,19 @@ const AuthFormSeparator = () => (
 );
 
 const AuthForm = ({ formType }: Props) => {
-  const { setCurrentUser, setError } = useAuthStore();
-  const router = useRouter();
+  const { setError } = useAuthStore();
   const searchParams = useSearchParams();
 
   const handleOAuth = async (
     provider: OAuthProvider.Github | OAuthProvider.Google
   ) => {
     try {
-      const redirectUrl = searchParams.get('redirect') || '/dashboard';
-      const response = await account.createOAuth2Session(
+      const redirectUrl = searchParams.get("redirect") || "/dashboard";
+      account.createOAuth2Session(
         provider,
         `${window.location.origin}${redirectUrl}`,
         `${window.location.origin}/signin`
       );
-    } catch (error) {
-      setError((error as Error).message);
-    }
-  };
-
-  const handleEmailPasswordSignUp = async (data: FormData) => {
-    try {
-      const response = await account.create(
-        "unique()",
-        data.get("email") as string,
-        data.get("password") as string,
-        data.get("name") as string
-      );
-      setCurrentUser(response);
-    } catch (error) {
-      setError((error as Error).message);
-    }
-  };
-
-  const handleEmailPasswordSignIn = async (data: FormData) => {
-    try {
-      const session = await account.createEmailPasswordSession(
-        data.get("email") as string,
-        data.get("password") as string
-      );
-
-      // Store session for API calls
-      localStorage.setItem("session", session.$id);
-
-      const user = await account.get();
-      setCurrentUser(user);
     } catch (error) {
       setError((error as Error).message);
     }
@@ -164,7 +132,7 @@ const AuthForm = ({ formType }: Props) => {
         <div className="text-xs text-center w-full">
           {formType === "signin" ? (
             <>
-              Don't have an account?{" "}
+              Don&apos;t have an account?{" "}
               <Link
                 href="/signup"
                 className="text-white font-semibold hover:underline"
@@ -206,7 +174,7 @@ const SignInForm = () => {
   const onSubmit = async (values: z.infer<typeof signInSchema>) => {
     const success = await signIn(values.email, values.password);
     if (success) {
-      const redirectUrl = searchParams.get('redirect') || '/dashboard';
+      const redirectUrl = searchParams.get("redirect") || "/dashboard";
       router.push(redirectUrl);
     }
   };
@@ -294,7 +262,7 @@ const SignUpForm = () => {
   const onSubmit = async (values: z.infer<typeof signUpSchema>) => {
     const success = await signUp(values.email, values.password, values.name);
     if (success) {
-      const redirectUrl = searchParams.get('redirect') || '/dashboard';
+      const redirectUrl = searchParams.get("redirect") || "/dashboard";
       router.push(redirectUrl);
     }
   };
