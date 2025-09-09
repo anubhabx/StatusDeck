@@ -38,3 +38,5 @@ npm-debug.log*
 design.json
 
 apps/api/prisma/migrations
+
+.github/
